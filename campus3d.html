@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="description" content="上海理工大学军工路校区实景三维模型，基于 OpenStreetMap 实测建筑轮廓与路网生成。">
+<title>上海理工大学 · 军工路校区实景三维 | USST 3D</title>
+<style>
+:root{
+  --bg:#050a12;
+  --panel:rgba(10,18,30,.82);
+  --panel-2:rgba(255,255,255,.045);
+  --line:rgba(255,255,255,.10);
+  --text:#eaf2ff;
+  --muted:#8fa4c4;
+  --accent:#4c9bff;
+  --accent-2:#5fe3c0;
+  --gold:#f2c879;
+  --danger:#ff7d6b;
+  --shadow:0 18px 50px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;overflow:hidden;background:var(--bg);color:var(--text);
+  font-family:"PingFang SC","Microsoft YaHei","Segoe UI",system-ui,sans-serif;line-height:1.6}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+a{color:inherit;text-decoration:none}
+#stage{position:fixed;inset:0;touch-action:none;cursor:grab}
+#stage.grabbing{cursor:grabbing}
+#stage.pointing{cursor:pointer}
+#stage canvas{display:block;width:100%;height:100%}
+
+.topbar{
+  position:fixed;top:0;left:0;right:0;height:64px;z-index:30;display:flex;align-items:center;
+  gap:14px;padding:0 18px;pointer-events:none;
+  background:linear-gradient(180deg,rgba(5,10,18,.86),rgba(5,10,18,0));
+}
+.brand{display:flex;align-items:center;gap:11px;pointer-events:auto;flex:0 0 auto}
+.mark{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-weight:800;font-size:13px;
+  letter-spacing:.5px;color:#061321;background:linear-gradient(140deg,#7fd8ff,#5fe3c0);box-shadow:0 6px 18px rgba(95,227,192,.25)}
+.brand h1{margin:0;font-size:15px;font-weight:650;letter-spacing:.4px;white-space:nowrap}
+.brand p{margin:0;font-size:11px;color:var(--muted);letter-spacing:.6px;white-space:nowrap}
+.top-actions{margin-left:auto;display:flex;align-items:center;gap:8px;pointer-events:auto}
+.pill{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 13px;border-radius:999px;
+  background:rgba(255,255,255,.07);border:1px solid var(--line);font-size:12.5px;color:#dce8fb;
+  backdrop-filter:blur(12px);transition:.2s}
+.pill:hover{background:rgba(76,155,255,.18);border-color:rgba(76,155,255,.45)}
+.pill .dot{width:7px;height:7px;border-radius:50%;background:var(--accent-2);box-shadow:0 0 8px var(--accent-2)}
+
+.panel{
+  position:fixed;left:16px;top:78px;width:272px;max-height:calc(100vh - 150px);z-index:40;
+  display:flex;flex-direction:column;gap:14px;padding:16px;border-radius:18px;
+  background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  overflow:auto;overscroll-behavior:contain;
+}
+.panel::-webkit-scrollbar{width:5px}
+.panel::-webkit-scrollbar-thumb{background:rgba(255,255,255,.16);border-radius:9px}
+.panel-title{display:flex;align-items:center;justify-content:space-between;font-size:11px;letter-spacing:1.6px;
+  color:var(--muted);text-transform:uppercase}
+.panel-title span:last-child{letter-spacing:0;text-transform:none;font-size:11px;color:#5f769a}
+.search{position:relative}
+.search input{
+  width:100%;height:38px;border-radius:11px;border:1px solid var(--line);background:rgba(255,255,255,.05);
+  color:var(--text);padding:0 34px 0 12px;font-size:13px;outline:none;transition:.2s;
+}
+.search input::placeholder{color:#64789a}
+.search input:focus{border-color:rgba(76,155,255,.6);background:rgba(76,155,255,.08)}
+.search svg{position:absolute;right:11px;top:11px;opacity:.5}
+.results{position:absolute;left:0;right:0;top:44px;z-index:5;display:none;max-height:220px;overflow:auto;
+  background:#0a1524;border:1px solid var(--line);border-radius:11px;box-shadow:var(--shadow);padding:5px}
+.results.show{display:block}
+.results button{display:block;width:100%;text-align:left;padding:7px 9px;border-radius:8px;font-size:12.5px;color:#cfe0f7}
+.results button:hover,.results button:focus{background:rgba(76,155,255,.18)}
+.results .none{padding:8px 9px;font-size:12px;color:var(--muted)}
+
+.views{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.views button,.toggle{
+  border:1px solid var(--line);background:rgba(255,255,255,.045);border-radius:10px;
+  font-size:12px;padding:8px 6px;color:#cfe0f7;transition:.18s;text-align:center;
+}
+.views button:hover,.toggle:hover{background:rgba(76,155,255,.16);border-color:rgba(76,155,255,.42)}
+.views button.active{background:rgba(76,155,255,.22);border-color:rgba(95,227,192,.55);color:#fff}
+
+.layers{display:flex;flex-direction:column;gap:2px}
+.layer{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:9px;font-size:12.5px;
+  color:#d6e4f8;cursor:pointer;user-select:none;transition:background .16s}
+.layer:hover{background:rgba(255,255,255,.05)}
+.layer input{appearance:none;width:30px;height:17px;border-radius:999px;background:rgba(255,255,255,.14);
+  position:relative;flex:0 0 auto;transition:.2s;cursor:pointer}
+.layer input::after{content:"";position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;
+  background:#93a6c7;transition:.2s}
+.layer input:checked{background:rgba(76,155,255,.65)}
+.layer input:checked::after{left:15px;background:#fff}
+.layer .sw{width:9px;height:9px;border-radius:3px;flex:0 0 auto}
+
+.row{display:flex;gap:7px}
+.row .toggle{flex:1}
+.toggle.on{background:rgba(95,227,192,.18);border-color:rgba(95,227,192,.5);color:#eafffa}
+
+.meta{border-top:1px solid var(--line);padding-top:11px;display:grid;gap:6px;font-size:11.5px;color:var(--muted)}
+.meta b{color:#cbdcf4;font-weight:600}
+
+.info{
+  position:fixed;right:16px;top:78px;width:292px;z-index:45;padding:18px;border-radius:18px;
+  background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);
+  backdrop-filter:blur(20px);transform:translateX(120%);opacity:0;transition:.32s cubic-bezier(.2,.8,.2,1);
+  pointer-events:none;
+}
+.info.show{transform:none;opacity:1;pointer-events:auto}
+.info .close{position:absolute;right:11px;top:11px;width:26px;height:26px;border-radius:50%;
+  display:grid;place-items:center;color:var(--muted);background:rgba(255,255,255,.06)}
+.info .close:hover{color:#fff;background:rgba(255,255,255,.12)}
+.info .tag{display:inline-block;font-size:10.5px;letter-spacing:.8px;color:#7fe9cf;background:rgba(95,227,192,.12);
+  border:1px solid rgba(95,227,192,.25);padding:2px 8px;border-radius:999px;margin-bottom:9px}
+.info h2{margin:0 0 3px;font-size:19px;line-height:1.35;padding-right:22px}
+.info .sub{font-size:11.5px;color:var(--muted);margin-bottom:14px}
+.info dl{display:grid;grid-template-columns:74px 1fr;gap:8px 10px;margin:0;font-size:12.5px}
+.info dt{color:var(--muted)}
+.info dd{margin:0;color:#e3eefc}
+.info .act{margin-top:15px;display:flex;gap:7px}
+.info .act button{flex:1;height:33px;border-radius:9px;font-size:12px;border:1px solid var(--line);
+  background:rgba(255,255,255,.05)}
+.info .act button:hover{background:rgba(76,155,255,.18);border-color:rgba(76,155,255,.45)}
+
+.labels{position:fixed;inset:0;z-index:20;pointer-events:none;overflow:hidden}
+.lbl{
+  position:absolute;transform:translate(-50%,-100%);white-space:nowrap;font-size:11px;color:#dceafc;
+  padding:2px 7px;border-radius:7px;background:rgba(7,15,26,.72);border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 4px 12px rgba(0,0,0,.3);opacity:0;transition:opacity .18s;letter-spacing:.2px;
+}
+.lbl::after{content:"";position:absolute;left:50%;bottom:-4px;width:1px;height:4px;background:rgba(255,255,255,.25)}
+.lbl.gold{color:#ffe1a6;border-color:rgba(242,200,121,.34);background:rgba(38,28,10,.72)}
+
+.bottom{position:fixed;left:0;right:0;bottom:0;height:52px;z-index:25;display:flex;align-items:center;
+  justify-content:center;gap:14px;pointer-events:none;font-size:11.5px;color:#7d93b5;
+  background:linear-gradient(0deg,rgba(5,10,18,.9),rgba(5,10,18,0))}
+.bottom .k{display:inline-flex;align-items:center;gap:5px}
+.bottom .k b{color:#c6d8ef;font-weight:600}
+.compass{
+  position:fixed;right:22px;bottom:64px;width:56px;height:56px;border-radius:50%;z-index:26;
+  border:1px solid var(--line);background:rgba(8,16,28,.7);backdrop-filter:blur(10px);
+  display:grid;place-items:center;pointer-events:none;
+}
+.compass .n{position:absolute;top:4px;font-size:9px;color:#ff9a8b;letter-spacing:1px}
+.compass .arrow{width:2px;height:26px;background:linear-gradient(180deg,#ff7d6b 50%,#7fa8da 50%);border-radius:2px;
+  transition:transform .12s linear}
+.scale{
+  position:fixed;left:18px;bottom:62px;z-index:26;pointer-events:none;color:#9fb4d3;font-size:10.5px;
+  display:flex;flex-direction:column;gap:3px;
+}
+.scale .bar{height:3px;background:linear-gradient(90deg,#9fb4d3 0 48%,transparent 48% 52%,#9fb4d3 52% 100%);
+  border-radius:2px;transition:width .15s}
+
+.loading{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:#050a12;
+  transition:opacity .6s;font-size:13px;color:#9fb4d3;letter-spacing:1px}
+.loading.hide{opacity:0;pointer-events:none}
+.loading .inner{text-align:center}
+.loading .ring{width:44px;height:44px;margin:0 auto 16px;border-radius:50%;
+  border:2px solid rgba(76,155,255,.2);border-top-color:#5fe3c0;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;left:50%;top:76px;transform:translate(-50%,-12px);z-index:60;padding:7px 14px;
+  border-radius:999px;background:rgba(76,155,255,.2);border:1px solid rgba(76,155,255,.45);
+  font-size:12px;opacity:0;transition:.25s;pointer-events:none}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+@media (max-width:900px){
+  .brand p{display:none}
+  .panel{left:10px;right:10px;top:auto;bottom:56px;width:auto;max-height:46vh;border-radius:16px}
+  .info{left:10px;right:10px;top:auto;bottom:56px;width:auto;transform:translateY(120%)}
+  .info.show{transform:none}
+  .bottom{display:none}
+  .compass{right:14px;bottom:auto;top:76px;width:46px;height:46px}
+  .scale{display:none}
+  .topbar{padding:0 12px}
+  .top-actions .pill span.txt{display:none}
+}
+@media (max-width:520px){
+  .panel{max-height:52vh;padding:13px}
+  .views{grid-template-columns:1fr 1fr 1fr}
+  .info h2{font-size:17px}
+}
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<div class="labels" id="labels"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="mark">USST</div>
+    <div>
+      <h1>军工路校区 · 实景三维</h1>
+      <p>REAL-WORLD 3D CAMPUS · OPENSTREETMAP DATA</p>
+    </div>
+  </div>
+  <div class="top-actions">
+    <a class="pill" href="index.html"><span class="dot"></span><span class="txt">返回介绍页</span></a>
+    <button class="pill" id="btnHelp" type="button"><span class="txt">使用说明</span></button>
+  </div>
+</header>
+
+<aside class="panel" id="panel">
+  <div class="panel-title"><span>定位 / 检索</span><span id="statBuildings">—</span></div>
+  <div class="search">
+    <input id="searchInput" type="search" placeholder="搜索建筑，如：图书馆、综合楼" autocomplete="off">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+    <div class="results" id="results"></div>
+  </div>
+
+  <div class="panel-title"><span>视角</span><span>点击切换</span></div>
+  <div class="views" id="views">
+    <button data-view="all" class="active" type="button">校园全景</button>
+    <button data-view="library" type="button">图书馆</button>
+    <button data-view="teach" type="button">第一教学楼</button>
+    <button data-view="hall" type="button">大礼堂</button>
+    <button data-view="south" type="button">南校区</button>
+    <button data-view="river" type="button">运河沿岸</button>
+  </div>
+
+  <div class="panel-title"><span>图层</span><span>实测数据</span></div>
+  <div class="layers">
+    <label class="layer"><input type="checkbox" data-layer="campus" checked><span class="sw" style="background:#d9cfb8"></span>校园建筑</label>
+    <label class="layer"><input type="checkbox" data-layer="env" checked><span class="sw" style="background:#7f8b9c"></span>周边城市建筑</label>
+    <label class="layer"><input type="checkbox" data-layer="road" checked><span class="sw" style="background:#5b6472"></span>道路与步道</label>
+    <label class="layer"><input type="checkbox" data-layer="water" checked><span class="sw" style="background:#2f86d6"></span>河道水系</label>
+    <label class="layer"><input type="checkbox" data-layer="green" checked><span class="sw" style="background:#2f8f6b"></span>绿地与树木</label>
+    <label class="layer"><input type="checkbox" data-layer="sport" checked><span class="sw" style="background:#c4553f"></span>运动场地</label>
+    <label class="layer"><input type="checkbox" data-layer="label" checked><span class="sw" style="background:#f2c879"></span>名称标注</label>
+  </div>
+
+  <div class="row">
+    <button class="toggle" id="btnNight" type="button">夜景模式</button>
+    <button class="toggle" id="btnSpin" type="button">自动巡航</button>
+  </div>
+
+  <div class="meta">
+    <div>数据：<b>OpenStreetMap 实测轮廓</b>（ODbL）</div>
+    <div>建筑：<b id="statInside">—</b> 栋校内 / <b id="statTotal">—</b> 栋总</div>
+    <div>高度：按 OSM 层数或建筑类型估算</div>
+    <div>高程：长江三角洲冲积平原，校区高差 &lt; 2 m</div>
+  </div>
+</aside>
+
+<section class="info" id="info">
+  <button class="close" id="infoClose" type="button" aria-label="关闭">✕</button>
+  <span class="tag" id="infoTag">校园建筑</span>
+  <h2 id="infoName">建筑名称</h2>
+  <div class="sub" id="infoSub">University building</div>
+  <dl>
+    <dt>建筑类型</dt><dd id="infoKind">—</dd>
+    <dt>估算高度</dt><dd id="infoHeight">—</dd>
+    <dt>占地轮廓</dt><dd id="infoArea">—</dd>
+    <dt>经纬度</dt><dd id="infoGeo">—</dd>
+    <dt>OSM 编号</dt><dd id="infoId">—</dd>
+  </dl>
+  <div class="act">
+    <button id="btnFocus" type="button">飞近查看</button>
+    <button id="btnReset" type="button">回到全景</button>
+  </div>
+</section>
+
+<nav class="compass"><span class="n">N</span><i class="arrow" id="compassArrow"></i></nav>
+<div class="scale"><span id="scaleText">200 m</span><i class="bar" id="scaleBar" style="width:88px"></i></div>
+
+<div class="bottom">
+  <span class="k"><b>左键拖拽</b> 旋转</span>
+  <span class="k"><b>滚轮</b> 缩放</span>
+  <span class="k"><b>右键拖拽</b> 平移</span>
+  <span class="k"><b>点击建筑</b> 查看信息</span>
+  <span class="k"><b>双击</b> 飞近</span>
+</div>
+
+<div class="loading" id="loading"><div class="inner"><div class="ring"></div><div>正在构建实景三维校园…</div></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="assets/three.min.js"></script>
+<script src="data/campus_scene.js"></script>
+<script>
+(function () {
+'use strict';
+
+var DATA = window.CAMPUS_SCENE;
+var stage = document.getElementById('stage');
+var loading = document.getElementById('loading');
+
+function fail(msg) {
+  loading.innerHTML = '<div class="inner" style="max-width:340px;line-height:1.9">' + msg + '</div>';
+  loading.classList.remove('hide');
+}
+if (!window.THREE) { fail('3D 引擎未加载<br>请确认 assets/three.min.js 与本页面在同一目录'); return; }
+if (!DATA || !DATA.buildings) { fail('实测数据未加载<br>请确认 data/campus_scene.js 存在'); return; }
+
+var scene, camera, renderer, world, clock;
+var buildingMeshes = [], campusMeshes = [], envMeshes = [], picked = null;
+var labelData = [], labelEls = [];
+var orbit = { theta: -1.12, phi: 0.86, dist: 1260, tTheta: -1.12, tPhi: 0.86, tDist: 1260,
+  target: new THREE.Vector3(35, 0, 170), tTarget: new THREE.Vector3(35, 0, 170) };
+var night = false, autoSpin = false;
+var layers = { campus: true, env: true, road: true, water: true, green: true, sport: true, label: true };
+var COLORS = {
+  university: 0xd7ccb2, dormitory: 0xc4886f, school: 0xd3b98f, library: 0xe6d6a8,
+  restaurant: 0xd9a15f, hospital: 0xdfe3e6, residential: 0xa4adb8, apartments: 0xb0a9a3,
+  construction: 0x93a0ad, yes: 0xbfc4c9, house: 0xcbbfa9, hist: 0xb36a56, default: 0xc2bcae
+};
+var KIND_CN = {
+  university: '教学 / 科研建筑', dormitory: '学生宿舍', school: '教学建筑', library: '图书馆',
+  restaurant: '食堂 / 餐饮', hospital: '医疗建筑', residential: '住宅', apartments: '公寓',
+  construction: '在建建筑', yes: '建筑', house: '低层建筑', hist: '历史保护建筑',
+  office: '办公建筑', commercial: '商业建筑', retail: '商业建筑'
+};
+var wallCache = {}, roofCache = {}, envMat, envRoofMat, highlightMat;
+var campusGroup, envGroup, roadGroup, waterGroup, greenGroup, sportGroup, treeGroup, slabGroup;
+var windowTexture, facadeTexture;
+
+function makeFacadeTexture() {
+  var c = document.createElement('canvas');
+  c.width = 64; c.height = 64;
+  var ctx = c.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, 64, 64);
+  for (var y = 0; y < 4; y++) {
+    for (var x = 0; x < 4; x++) {
+      ctx.fillStyle = 'rgba(44,58,76,.52)';
+      ctx.fillRect(x * 16 + 4, y * 16 + 6, 9, 7);
+      ctx.fillStyle = 'rgba(255,255,255,.28)';
+      ctx.fillRect(x * 16 + 4, y * 16 + 6, 9, 1.5);
+    }
+  }
+  var t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(1 / 14, 1 / 14);
+  return t;
+}
+
+function makeWindowTexture() {
+  var c = document.createElement('canvas');
+  c.width = 64; c.height = 64;
+  var ctx = c.getContext('2d');
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, 64, 64);
+  for (var y = 0; y < 4; y++) {
+    for (var x = 0; x < 4; x++) {
+      if (Math.random() < 0.62) {
+        ctx.fillStyle = Math.random() < 0.18 ? 'rgba(255,236,190,.95)' : 'rgba(255,196,122,.8)';
+        ctx.fillRect(x * 16 + 5, y * 16 + 5, 8, 9);
+      }
+    }
+  }
+  var t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(1 / 9, 1 / 9);
+  return t;
+}
+
+function wallMaterial(b) {
+  var key = b.hist ? 'hist' : (COLORS[b.k] ? b.k : 'default');
+  if (wallCache[key]) return wallCache[key];
+  var m = new THREE.MeshStandardMaterial({
+    color: COLORS[key] || COLORS.default,
+    roughness: 0.82, metalness: 0.06,
+    map: key === 'hist' ? null : facadeTexture,
+    emissive: 0xffb25e, emissiveMap: windowTexture, emissiveIntensity: 0
+  });
+  wallCache[key] = m;
+  return m;
+}
+
+function roofMaterial(b) {
+  var key = b.hist ? 'hist' : (COLORS[b.k] ? b.k : 'default');
+  if (roofCache[key]) return roofCache[key];
+  var col = new THREE.Color(COLORS[key] || COLORS.default).multiplyScalar(0.58);
+  if (b.hist) col = new THREE.Color(0x7d3b30);
+  var m = new THREE.MeshStandardMaterial({ color: col, roughness: 0.9, metalness: 0.04 });
+  roofCache[key] = m;
+  return m;
+}
+
+function shapeFromPoly(poly) {
+  var s = new THREE.Shape();
+  var signed = 0;
+  for (var a = 0; a < poly.length; a++) {
+    var na = (a + 1) % poly.length;
+    signed += poly[a][0] * (-poly[na][1]) - poly[na][0] * (-poly[a][1]);
+  }
+  var pts = signed < 0 ? poly.slice().reverse() : poly;
+  for (var i = 0; i < pts.length; i++) {
+    var x = pts[i][0], y = -pts[i][1];
+    if (i === 0) s.moveTo(x, y); else s.lineTo(x, y);
+  }
+  s.closePath();
+  return s;
+}
+
+function flatShape(poly, color, y, opacity) {
+  var g = new THREE.ShapeGeometry(shapeFromPoly(poly));
+  g.rotateX(-Math.PI / 2);
+  var m = new THREE.MeshStandardMaterial({
+    color: color, roughness: 0.95, metalness: 0.02,
+    transparent: opacity !== undefined, opacity: opacity === undefined ? 1 : opacity,
+    depthWrite: opacity === undefined
+  });
+  var mesh = new THREE.Mesh(g, m);
+  mesh.position.y = y;
+  return mesh;
+}
+
+function ribbonGeometry(points, width, y) {
+  var n = points.length;
+  if (n < 2) return null;
+  var pos = new Float32Array(n * 6);
+  var nor = new Float32Array(n * 6);
+  var idx = [];
+  for (var i = 0; i < n; i++) {
+    var p = points[i];
+    var a = points[Math.max(0, i - 1)];
+    var b = points[Math.min(n - 1, i + 1)];
+    var dx = b[0] - a[0], dz = b[1] - a[1];
+    var len = Math.sqrt(dx * dx + dz * dz) || 1;
+    var nx = -dz / len, nz = dx / len;
+    var hw = width / 2;
+    pos[i * 6] = p[0] + nx * hw; pos[i * 6 + 1] = y; pos[i * 6 + 2] = p[1] + nz * hw;
+    pos[i * 6 + 3] = p[0] - nx * hw; pos[i * 6 + 4] = y; pos[i * 6 + 5] = p[1] - nz * hw;
+    nor[i * 6 + 1] = 1; nor[i * 6 + 4] = 1;
+  }
+  for (var j = 0; j < n - 1; j++) {
+    var k = j * 2;
+    idx.push(k, k + 1, k + 2, k + 1, k + 3, k + 2);
+  }
+  var g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  g.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
+  g.setIndex(idx);
+  return g;
+}
+
+function mergeGeoms(geoms) {
+  var totalV = 0, totalI = 0;
+  for (var i = 0; i < geoms.length; i++) {
+    totalV += geoms[i].attributes.position.count;
+    totalI += geoms[i].index.count;
+  }
+  var pos = new Float32Array(totalV * 3);
+  var nor = new Float32Array(totalV * 3);
+  var idx = totalV > 65535 ? new Uint32Array(totalI) : new Uint16Array(totalI);
+  var vo = 0, io = 0;
+  for (var j = 0; j < geoms.length; j++) {
+    var g = geoms[j];
+    pos.set(g.attributes.position.array, vo * 3);
+    nor.set(g.attributes.normal.array, vo * 3);
+    var ia = g.index.array;
+    for (var k = 0; k < ia.length; k++) idx[io + k] = ia[k] + vo;
+    vo += g.attributes.position.count;
+    io += ia.length;
+    g.dispose();
+  }
+  var out = new THREE.BufferGeometry();
+  out.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  out.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
+  out.setIndex(new THREE.BufferAttribute(idx, 1));
+  out.computeBoundingSphere();
+  return out;
+}
+
+function rand(seed) {
+  var s = seed >>> 0;
+  return function () {
+    s = (s + 0x6D2B79F5) >>> 0;
+    var t = s;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function init() {
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0a1424);
+  scene.fog = new THREE.Fog(0x0a1424, 1500, 3400);
+
+  renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  if ('outputEncoding' in renderer && THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
+  if (THREE.ACESFilmicToneMapping) {
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.02;
+  }
+  stage.appendChild(renderer.domElement);
+
+  camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 9000);
+
+  var hemi = new THREE.HemisphereLight(0x9ec9ff, 0x1a2430, 0.95);
+  scene.add(hemi);
+  var sun = new THREE.DirectionalLight(0xfff2da, 1.5);
+  sun.position.set(700, 1000, 420);
+  scene.add(sun);
+  var fill = new THREE.DirectionalLight(0x4f86ff, 0.55);
+  fill.position.set(-600, 380, -520);
+  scene.add(fill);
+  var amb = new THREE.AmbientLight(0x8fb4e6, 0.28);
+  scene.add(amb);
+  scene.userData.hemi = hemi;
+  scene.userData.sun = sun;
+  scene.userData.fill = fill;
+  scene.userData.amb = amb;
+
+  world = new THREE.Group();
+  scene.add(world);
+
+  windowTexture = makeWindowTexture();
+  facadeTexture = makeFacadeTexture();
+  highlightMat = new THREE.MeshStandardMaterial({
+    color: 0x5fe3c0, emissive: 0x2fa88a, emissiveIntensity: 0.55, roughness: 0.45, metalness: 0.1
+  });
+  envMat = new THREE.MeshStandardMaterial({
+    color: 0x7f8b9c, roughness: 0.92, metalness: 0.04
+  });
+  envRoofMat = new THREE.MeshStandardMaterial({ color: 0x56616f, roughness: 0.95 });
+
+  buildTerrain();
+  buildCampusSlab();
+  buildBuildings();
+  buildRoads();
+  buildWater();
+  buildGreens();
+  buildSports();
+  buildTrees();
+
+  clock = new THREE.Clock();
+  updateCamera(true);
+  animate();
+  setTimeout(function () {
+    loading.classList.add('hide');
+    setTimeout(function () { loading.style.display = 'none'; }, 720);
+  }, 180);
+}
+
+function buildTerrain() {
+  var g = new THREE.PlaneGeometry(2600, 2600, 46, 46);
+  g.rotateX(-Math.PI / 2);
+  var pos = g.attributes.position;
+  for (var i = 0; i < pos.count; i++) {
+    var x = pos.getX(i), z = pos.getZ(i);
+    var h = Math.sin(x * 0.0021) * Math.cos(z * 0.0017) * 0.5 + Math.sin(x * 0.006 + z * 0.005) * 0.18;
+    pos.setY(i, h);
+  }
+  g.computeVertexNormals();
+  var m = new THREE.MeshStandardMaterial({ color: 0x1a2634, roughness: 1, metalness: 0 });
+  var mesh = new THREE.Mesh(g, m);
+  mesh.position.set(15, -0.9, 120);
+  world.add(mesh);
+  world.userData.terrain = mesh;
+}
+
+function buildCampusSlab() {
+  slabGroup = new THREE.Group();
+  var colors = [0x2e3a49, 0x303c4b];
+  for (var i = 0; i < DATA.campus.length; i++) {
+    slabGroup.add(flatShape(DATA.campus[i], colors[i % 2], 0.1));
+  }
+  world.add(slabGroup);
+}
+
+function buildBuildings() {
+  campusGroup = new THREE.Group();
+  envGroup = new THREE.Group();
+  for (var i = 0; i < DATA.buildings.length; i++) {
+    var b = DATA.buildings[i];
+    var h = b.h;
+    var geo = new THREE.ExtrudeGeometry(shapeFromPoly(b.p), { depth: h, bevelEnabled: false, steps: 1, curveSegments: 1 });
+    geo.rotateX(-Math.PI / 2);
+    geo.computeVertexNormals();
+    var mesh;
+    if (b.in) {
+      mesh = new THREE.Mesh(geo, [roofMaterial(b), wallMaterial(b)]);
+      mesh.userData.b = b;
+      campusGroup.add(mesh);
+      campusMeshes.push(mesh);
+    } else {
+      mesh = new THREE.Mesh(geo, [envRoofMat, envMat]);
+      mesh.userData.b = b;
+      envGroup.add(mesh);
+      envMeshes.push(mesh);
+    }
+    mesh.position.y = 0.2;
+    buildingMeshes.push(mesh);
+  }
+  world.add(envGroup);
+  world.add(campusGroup);
+  document.getElementById('statTotal').textContent = DATA.buildings.length;
+  document.getElementById('statInside').textContent = campusMeshes.length;
+  document.getElementById('statBuildings').textContent = DATA.meta.named + ' 栋有名';
+}
+
+function buildRoads() {
+  roadGroup = new THREE.Group();
+  var groups = { carIn: [], carOut: [], walkIn: [], walkOut: [] };
+  var walk = { footway: 1, path: 1, steps: 1, pedestrian: 1, cycleway: 1, track: 1 };
+  for (var i = 0; i < DATA.roads.length; i++) {
+    var r = DATA.roads[i];
+    var g = ribbonGeometry(r.p, r.w, walk[r.k] ? 0.19 : 0.16);
+    if (!g) continue;
+    var key = (walk[r.k] ? 'walk' : 'car') + (r.in ? 'In' : 'Out');
+    groups[key].push(g);
+  }
+  var defs = [
+    ['carOut', 0x39424f, 0.95],
+    ['carIn', 0x7b8696, 0.98],
+    ['walkOut', 0x4c5665, 0.9],
+    ['walkIn', 0x9aa5b4, 0.95]
+  ];
+  for (var d = 0; d < defs.length; d++) {
+    if (!groups[defs[d][0]].length) continue;
+    var mat = new THREE.MeshStandardMaterial({ color: defs[d][1], roughness: 0.9, metalness: 0.05 });
+    roadGroup.add(new THREE.Mesh(mergeGeoms(groups[defs[d][0]]), mat));
+  }
+  world.add(roadGroup);
+}
+
+function buildWater() {
+  waterGroup = new THREE.Group();
+  var mat = new THREE.MeshStandardMaterial({
+    color: 0x1f6fa8, roughness: 0.18, metalness: 0.55,
+    emissive: 0x0a3358, emissiveIntensity: 0.35
+  });
+  for (var i = 0; i < DATA.waters.length; i++) {
+    var w = DATA.waters[i];
+    var g = ribbonGeometry(w.p, w.w, 0.06);
+    if (g) waterGroup.add(new THREE.Mesh(g, mat));
+  }
+  world.add(waterGroup);
+}
+
+function buildGreens() {
+  greenGroup = new THREE.Group();
+  for (var i = 0; i < DATA.greens.length; i++) {
+    greenGroup.add(flatShape(DATA.greens[i].p, 0x24573f, 0.14));
+  }
+  world.add(greenGroup);
+}
+
+function buildSports() {
+  sportGroup = new THREE.Group();
+  var pitchMat = new THREE.MeshStandardMaterial({ color: 0x2f7a4f, roughness: 0.95 });
+  var trackMat = new THREE.MeshStandardMaterial({ color: 0xa8493a, roughness: 0.92 });
+  var courtMat = new THREE.MeshStandardMaterial({ color: 0x2f6f78, roughness: 0.9 });
+  for (var i = 0; i < DATA.pitches.length; i++) {
+    var s = DATA.pitches[i];
+    var mat = (s.s === 'basketball' || s.s === 'tennis' || s.s === 'volleyball') ? courtMat : pitchMat;
+    var m = flatShape(s.p, 0xffffff, 0.18);
+    m.material = mat;
+    sportGroup.add(m);
+  }
+  for (var j = 0; j < DATA.tracks.length; j++) {
+    var t = flatShape(DATA.tracks[j].p, 0xffffff, 0.2);
+    t.material = trackMat;
+    sportGroup.add(t);
+  }
+  world.add(sportGroup);
+}
+
+function buildTrees() {
+  treeGroup = new THREE.Group();
+  var random = rand(20261105);
+  var positions = [];
+  var trees = 520;
+  var b = DATA.meta.bounds;
+  var boxes = [];
+  for (var bi = 0; bi < DATA.buildings.length; bi++) {
+    var bb = DATA.buildings[bi];
+    if (!bb.in) continue;
+    var minx = Infinity, maxx = -Infinity, minz = Infinity, maxz = -Infinity;
+    for (var pi = 0; pi < bb.p.length; pi++) {
+      if (bb.p[pi][0] < minx) minx = bb.p[pi][0];
+      if (bb.p[pi][0] > maxx) maxx = bb.p[pi][0];
+      if (bb.p[pi][1] < minz) minz = bb.p[pi][1];
+      if (bb.p[pi][1] > maxz) maxz = bb.p[pi][1];
+    }
+    boxes.push([minx - 3, minz - 3, maxx + 3, maxz + 3]);
+  }
+  for (var attempt = 0; attempt < trees * 8 && positions.length < trees; attempt++) {
+    var x = b[0] + random() * (b[2] - b[0]);
+    var z = b[1] + random() * (b[3] - b[1]);
+    var ok = false;
+    for (var c = 0; c < DATA.campus.length; c++) {
+      if (pointInPoly(x, z, DATA.campus[c])) { ok = true; break; }
+    }
+    if (!ok) continue;
+    var blocked = false;
+    for (var k = 0; k < boxes.length; k++) {
+      var bx = boxes[k];
+      if (x > bx[0] && x < bx[2] && z > bx[1] && z < bx[3]) { blocked = true; break; }
+    }
+    if (blocked) continue;
+    var near = false;
+    for (var q = 0; q < positions.length; q++) {
+      var ddx = positions[q][0] - x, ddz = positions[q][1] - z;
+      if (ddx * ddx + ddz * ddz < 46) { near = true; break; }
+    }
+    if (near) continue;
+    positions.push([x, z, 0.75 + random() * 0.6]);
+  }
+
+  var trunkGeo = new THREE.CylinderGeometry(0.45, 0.75, 3.4, 5);
+  var crownGeo = new THREE.ConeGeometry(3.1, 8.2, 6);
+  var trunkMat = new THREE.MeshStandardMaterial({ color: 0x4a3826, roughness: 1 });
+  var crownMat = new THREE.MeshStandardMaterial({ color: 0x2f8f6b, roughness: 0.92 });
+  var trunks = new THREE.InstancedMesh(trunkGeo, trunkMat, positions.length);
+  var crowns = new THREE.InstancedMesh(crownGeo, crownMat, positions.length);
+  var mtx = new THREE.Matrix4();
+  var quat = new THREE.Quaternion();
+  var scale = new THREE.Vector3();
+  var pos = new THREE.Vector3();
+  for (var n = 0; n < positions.length; n++) {
+    var p = positions[n];
+    scale.set(p[2], p[2], p[2]);
+    pos.set(p[0], 1.7 * p[2], p[1]);
+    mtx.compose(pos, quat, scale);
+    trunks.setMatrixAt(n, mtx);
+    pos.set(p[0], 8.2 * p[2], p[1]);
+    mtx.compose(pos, quat, scale);
+    crowns.setMatrixAt(n, mtx);
+  }
+  trunks.instanceMatrix.needsUpdate = true;
+  crowns.instanceMatrix.needsUpdate = true;
+  treeGroup.add(trunks);
+  treeGroup.add(crowns);
+  world.add(treeGroup);
+  world.userData.treeCount = positions.length;
+}
+
+function pointInPoly(x, z, poly) {
+  var inside = false;
+  for (var i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    var xi = poly[i][0], zi = poly[i][1], xj = poly[j][0], zj = poly[j][1];
+    if (((zi > z) !== (zj > z)) && (x < (xj - xi) * (z - zi) / (zj - zi + 1e-12) + xi)) inside = !inside;
+  }
+  return inside;
+}
+
+function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
+
+function updateCamera(instant) {
+  var k = instant ? 1 : 0.145;
+  orbit.theta += (orbit.tTheta - orbit.theta) * k;
+  orbit.phi += (orbit.tPhi - orbit.phi) * k;
+  orbit.dist += (orbit.tDist - orbit.dist) * k;
+  orbit.target.lerp(orbit.tTarget, k);
+  var sp = Math.sin(orbit.phi), cp = Math.cos(orbit.phi);
+  camera.position.set(
+    orbit.target.x + sp * Math.sin(orbit.theta) * orbit.dist,
+    orbit.target.y + cp * orbit.dist,
+    orbit.target.z + sp * Math.cos(orbit.theta) * orbit.dist
+  );
+  camera.lookAt(orbit.target);
+  if (camera.position.y < 8) camera.position.y = 8;
+}
+
+function pan(dx, dy) {
+  var s = orbit.dist * 0.00115;
+  var right = new THREE.Vector3(Math.cos(orbit.theta), 0, -Math.sin(orbit.theta));
+  var fwd = new THREE.Vector3(-Math.sin(orbit.theta), 0, -Math.cos(orbit.theta));
+  orbit.tTarget.addScaledVector(right, -dx * s);
+  orbit.tTarget.addScaledVector(fwd, dy * s);
+  orbit.tTarget.x = clamp(orbit.tTarget.x, -1100, 1200);
+  orbit.tTarget.z = clamp(orbit.tTarget.z, -950, 1250);
+}
+
+var raycaster = new THREE.Raycaster();
+var pointerNdc = new THREE.Vector2();
+var pointerScreen = { x: 0, y: 0 };
+var dragging = { active: false, btn: 0, x: 0, y: 0, moved: 0, id: null };
+var hoverAt = 0;
+
+function pickables() {
+  var arr = [];
+  if (layers.campus) arr = arr.concat(campusMeshes);
+  if (layers.env) arr = arr.concat(envMeshes);
+  return arr;
+}
+
+function hitTest(clientX, clientY) {
+  var rect = renderer.domElement.getBoundingClientRect();
+  pointerNdc.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+  pointerNdc.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera(pointerNdc, camera);
+  var hits = raycaster.intersectObjects(pickables(), false);
+  return hits.length ? hits[0].object : null;
+}
+
+function select(mesh) {
+  if (picked && picked !== mesh && picked.userData) {
+    picked.material = picked.userData.baseMaterial || picked.material;
+  }
+  picked = mesh;
+  if (!mesh) {
+    document.getElementById('info').classList.remove('show');
+    return;
+  }
+  if (!mesh.userData.baseMaterial) mesh.userData.baseMaterial = mesh.material;
+  mesh.material = highlightMat;
+  showInfo(mesh.userData.b, mesh.userData.b.in ? '校内实测建筑' : '周边城市建筑');
+}
+
+function showInfo(b, tag) {
+  var LAT0 = DATA.meta.center[0], LON0 = DATA.meta.center[1];
+  var MX = 111320 * Math.cos(LAT0 * Math.PI / 180), MZ = 110540;
+  var lat = LAT0 - b.c[1] / MZ;
+  var lon = LON0 + b.c[0] / MX;
+  document.getElementById('infoTag').textContent = b.hist ? '历史保护建筑' : tag;
+  document.getElementById('infoName').textContent = b.n || '未命名建筑';
+  document.getElementById('infoSub').textContent = b.n
+    ? '基于 OpenStreetMap 实测轮廓自动生成'
+    : 'OSM 实测轮廓 · 图中暂无名称标注';
+  document.getElementById('infoKind').textContent = b.hist ? '历史保护建筑' : (KIND_CN[b.k] || '建筑');
+  document.getElementById('infoHeight').textContent = b.h + ' m（约 ' + Math.max(1, Math.round((b.h - 1.2) / 3.3)) + ' 层）';
+  document.getElementById('infoArea').textContent = b.a >= 10000 ? (b.a / 10000).toFixed(2) + ' 万 m²' : b.a + ' m²';
+  document.getElementById('infoGeo').textContent = lat.toFixed(6) + ', ' + lon.toFixed(6);
+  document.getElementById('infoId').textContent = 'way / relation ' + b.id;
+  document.getElementById('info').classList.add('show');
+}
+
+function flyTo(mesh, dist) {
+  if (!mesh) return;
+  var b = mesh.userData.b;
+  select(mesh);
+  orbit.tTarget.set(b.c[0], Math.min(b.h * 0.55, 18), b.c[1]);
+  orbit.tDist = dist || clamp(b.h * 7 + 130, 150, 380);
+  orbit.tPhi = 0.95;
+}
+
+function hideAllLayersExcept(name) {
+  layers.campus = name === 'campus';
+  layers.env = name === 'env';
+  layers.road = name === 'road';
+  layers.water = name === 'water';
+  layers.green = name === 'green';
+  layers.sport = name === 'sport';
+  layers.label = name === 'label';
+  campusGroup.visible = layers.campus;
+  envGroup.visible = layers.env;
+  roadGroup.visible = layers.road;
+  waterGroup.visible = layers.water;
+  greenGroup.visible = layers.green;
+  treeGroup.visible = layers.green;
+  sportGroup.visible = layers.sport;
+  document.getElementById('labels').style.display = layers.label ? '' : 'none';
+}
+
+function findByName(name) {
+  var list = DATA.buildings;
+  for (var i = 0; i < list.length; i++) {
+    if (list[i].n && list[i].n.indexOf(name) !== -1 && list[i].in) return list[i];
+  }
+  return null;
+}
+
+var VIEWS = {
+  all: function () { orbit.tTarget.set(15, 0, 120); orbit.tDist = 980; orbit.tTheta = -0.62; orbit.tPhi = 0.86; },
+  library: function () {
+    var b = findByName('湛恩纪念图书馆');
+    focusBuilding(b, 230);
+  },
+  teach: function () {
+    var b = findByName('第一教学楼');
+    focusBuilding(b, 210);
+  },
+  hall: function () {
+    var b = findByName('大礼堂') || findByName('音乐堂');
+    focusBuilding(b, 170);
+  },
+  south: function () {
+    orbit.tTarget.set(220, 0, 500);
+    orbit.tDist = 560;
+    orbit.tTheta = -0.35;
+    orbit.tPhi = 0.9;
+  },
+  river: function () {
+    orbit.tTarget.set(400, 0, 260);
+    orbit.tDist = 520;
+    orbit.tTheta = -1.45;
+    orbit.tPhi = 1.02;
+  }
+};
+
+function focusBuilding(b, dist) {
+  if (!b) return;
+  orbit.tTarget.set(b.c[0], Math.min(b.h * 0.5, 15), b.c[1]);
+  orbit.tDist = dist;
+  orbit.tPhi = 0.95;
+  var mesh = null;
+  for (var i = 0; i < campusMeshes.length; i++) {
+    if (campusMeshes[i].userData.b.id === b.id) { mesh = campusMeshes[i]; break; }
+  }
+  if (mesh) select(mesh);
+}
+
+function buildLabels() {
+  var named = DATA.buildings.filter(function (b) { return b.in && b.n; });
+  named.sort(function (a, b) {
+    var sa = a.h * 2 + a.a / 260 + (a.hist ? 45 : 0) + (a.k === 'library' ? 60 : 0);
+    var sb = b.h * 2 + b.a / 260 + (b.hist ? 45 : 0) + (b.k === 'library' ? 60 : 0);
+    return sb - sa;
+  });
+  var list = named.slice(0, 34);
+  var wrap = document.getElementById('labels');
+  for (var i = 0; i < list.length; i++) {
+    var el = document.createElement('div');
+    el.className = 'lbl' + (list[i].hist || list[i].k === 'library' ? ' gold' : '');
+    el.textContent = list[i].n;
+    wrap.appendChild(el);
+    labelEls.push(el);
+    labelData.push(list[i]);
+  }
+}
+
+var labelTick = 0;
+function updateLabels() {
+  if (!layers.label) return;
+  if (++labelTick % 3 !== 0) return;
+  if (!labelEls.length) return;
+  var w = window.innerWidth, h = window.innerHeight;
+  var max = w < 700 ? 7 : 12;
+  var shown = [];
+  var v = new THREE.Vector3();
+  for (var i = 0; i < labelData.length; i++) {
+    var b = labelData[i];
+    if (shown.length >= max) { labelEls[i].style.opacity = 0; continue; }
+    v.set(b.c[0], Math.min(b.h + 7, 46), b.c[1]).project(camera);
+    if (v.z > 1 || v.z < -1) { labelEls[i].style.opacity = 0; continue; }
+    var x = (v.x * 0.5 + 0.5) * w;
+    var y = (-v.y * 0.5 + 0.5) * h;
+    if (x < -80 || x > w + 80 || y < -20 || y > h + 20) { labelEls[i].style.opacity = 0; continue; }
+    var blocked = false;
+    for (var s = 0; s < shown.length; s++) {
+      if (Math.abs(shown[s].x - x) < 84 && Math.abs(shown[s].y - y) < 26) { blocked = true; break; }
+    }
+    if (blocked) { labelEls[i].style.opacity = 0; continue; }
+    shown.push({ x: x, y: y });
+    var el = labelEls[i];
+    el.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0) translate(-50%,-100%)';
+    el.style.opacity = 1;
+  }
+}
+
+function applyNight(on) {
+  night = on;
+  var bg = new THREE.Color(on ? 0x04070d : 0x0a1424);
+  scene.background = bg;
+  scene.fog.color = bg.clone();
+  scene.userData.hemi.intensity = on ? 0.28 : 0.95;
+  scene.userData.sun.intensity = on ? 0.32 : 1.5;
+  scene.userData.sun.color.set(on ? 0x9db9ff : 0xfff2da);
+  scene.userData.fill.intensity = on ? 0.22 : 0.55;
+  scene.userData.amb.intensity = on ? 0.1 : 0.28;
+  world.userData.terrain.material.color.set(on ? 0x0c141f : 0x1a2634);
+  slabGroup.children.forEach(function (m) { m.material.color.set(on ? 0x1c2735 : 0x2e3a49); });
+  for (var k in wallCache) {
+    if (wallCache.hasOwnProperty(k)) wallCache[k].emissiveIntensity = on ? 0.92 : 0;
+  }
+  if (envMat) envMat.color.set(on ? 0x5b6675 : 0x7f8b9c);
+  waterGroup.children.forEach(function (m) { if (m.material) m.material.emissiveIntensity = on ? 0.75 : 0.35; });
+  document.getElementById('btnNight').classList.toggle('on', on);
+  document.getElementById('btnNight').textContent = on ? '日景模式' : '夜景模式';
+}
+
+function toast(msg) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(function () { el.classList.remove('show'); }, 2600);
+}
+
+function bindEvents() {
+  stage.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+
+  stage.addEventListener('pointerdown', function (e) {
+    dragging.active = true;
+    dragging.btn = e.button;
+    dragging.x = e.clientX;
+    dragging.y = e.clientY;
+    dragging.moved = 0;
+    dragging.id = e.pointerId;
+    stage.classList.add('grabbing');
+    try { stage.setPointerCapture(e.pointerId); } catch (err) {}
+  });
+
+  stage.addEventListener('pointermove', function (e) {
+    if (!dragging.active) {
+      var now = performance.now();
+      if (now - hoverAt > 90) {
+        hoverAt = now;
+        var obj = hitTest(e.clientX, e.clientY);
+        stage.classList.toggle('pointing', !!obj);
+        if (obj && obj.userData && obj.userData.b) pointerScreen = { x: e.clientX, y: e.clientY };
+      }
+      return;
+    }
+    var dx = e.clientX - dragging.x, dy = e.clientY - dragging.y;
+    dragging.x = e.clientX;
+    dragging.y = e.clientY;
+    dragging.moved += Math.abs(dx) + Math.abs(dy);
+    if (dragging.btn === 0 && !e.shiftKey) {
+      orbit.tTheta -= dx * 0.0046;
+      orbit.tPhi = clamp(orbit.tPhi - dy * 0.0036, 0.12, 1.45);
+    } else {
+      pan(dx, dy);
+    }
+  });
+
+  stage.addEventListener('pointerup', function (e) {
+    stage.classList.remove('grabbing');
+    if (dragging.active && dragging.moved < 7 && dragging.btn === 0 && !e.shiftKey) {
+      var obj = hitTest(e.clientX, e.clientY);
+      if (obj) select(obj); else select(null);
+    }
+    dragging.active = false;
+  });
+
+  stage.addEventListener('pointercancel', function () { dragging.active = false; stage.classList.remove('grabbing'); });
+
+  stage.addEventListener('wheel', function (e) {
+    e.preventDefault();
+    orbit.tDist = clamp(orbit.tDist * Math.exp(e.deltaY * 0.0011), 45, 2500);
+  }, { passive: false });
+
+  stage.addEventListener('dblclick', function (e) {
+    var obj = hitTest(e.clientX, e.clientY);
+    if (obj) flyTo(obj);
+  });
+
+  var pinch = 0;
+  stage.addEventListener('touchstart', function (e) {
+    if (e.touches.length === 2) {
+      dragging.active = false;
+      var dx = e.touches[0].clientX - e.touches[1].clientX;
+      var dy = e.touches[0].clientY - e.touches[1].clientY;
+      pinch = Math.sqrt(dx * dx + dy * dy);
+    }
+  }, { passive: true });
+  stage.addEventListener('touchmove', function (e) {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      var dx = e.touches[0].clientX - e.touches[1].clientX;
+      var dy = e.touches[0].clientY - e.touches[1].clientY;
+      var d = Math.sqrt(dx * dx + dy * dy) || 1;
+      if (pinch > 0) orbit.tDist = clamp(orbit.tDist * (pinch / d), 45, 2500);
+      pinch = d;
+    }
+  }, { passive: false });
+
+  document.querySelectorAll('.layer input').forEach(function (input) {
+    input.addEventListener('change', function () {
+      var name = input.getAttribute('data-layer');
+      layers[name] = input.checked;
+      if (name === 'campus') campusGroup.visible = input.checked;
+      if (name === 'env') envGroup.visible = input.checked;
+      if (name === 'road') roadGroup.visible = input.checked;
+      if (name === 'water') waterGroup.visible = input.checked;
+      if (name === 'green') { greenGroup.visible = input.checked; treeGroup.visible = input.checked; }
+      if (name === 'sport') sportGroup.visible = input.checked;
+      if (name === 'label') document.getElementById('labels').style.display = input.checked ? '' : 'none';
+      if (name === 'campus' && !input.checked) select(null);
+    });
+  });
+
+  document.getElementById('views').addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-view]');
+    if (!btn) return;
+    document.querySelectorAll('#views button').forEach(function (b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    VIEWS[btn.getAttribute('data-view')]();
+  });
+
+  document.getElementById('btnNight').addEventListener('click', function () { applyNight(!night); });
+  document.getElementById('btnSpin').addEventListener('click', function () {
+    autoSpin = !autoSpin;
+    this.classList.toggle('on', autoSpin);
+    this.textContent = autoSpin ? '停止巡航' : '自动巡航';
+  });
+
+  document.getElementById('btnFocus').addEventListener('click', function () { if (picked) flyTo(picked); });
+  document.getElementById('btnReset').addEventListener('click', function () {
+    VIEWS.all();
+    document.querySelectorAll('#views button').forEach(function (b) { b.classList.remove('active'); });
+    document.querySelector('#views button[data-view="all"]').classList.add('active');
+    select(null);
+  });
+  document.getElementById('infoClose').addEventListener('click', function () { select(null); });
+
+  document.getElementById('btnHelp').addEventListener('click', function () {
+    toast('拖拽旋转 · 滚轮缩放 · 右键平移 · 点击建筑看详情 · 双击飞近');
+  });
+
+  var search = document.getElementById('searchInput');
+  var results = document.getElementById('results');
+  var named = DATA.buildings.filter(function (b) { return b.n && b.in; });
+
+  function renderResults() {
+    var q = search.value.trim();
+    if (!q) { results.classList.remove('show'); return; }
+    var hits = named.filter(function (b) { return b.n.indexOf(q) !== -1; }).slice(0, 8);
+    results.innerHTML = '';
+    if (!hits.length) {
+      var none = document.createElement('div');
+      none.className = 'none';
+      none.textContent = '未找到匹配的校内建筑';
+      results.appendChild(none);
+    } else {
+      hits.forEach(function (b) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = b.n;
+        btn.addEventListener('click', function () {
+          results.classList.remove('show');
+          search.value = b.n;
+          focusBuilding(b, clamp(b.h * 7 + 150, 170, 420));
+          document.querySelectorAll('#views button').forEach(function (x) { x.classList.remove('active'); });
+        });
+        results.appendChild(btn);
+      });
+    }
+    results.classList.add('show');
+  }
+  search.addEventListener('input', renderResults);
+  search.addEventListener('focus', renderResults);
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.search')) results.classList.remove('show');
+  });
+
+  window.addEventListener('resize', onResize);
+}
+
+function onResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+var frame = 0;
+function animate() {
+  requestAnimationFrame(animate);
+  var dt = Math.min(clock.getDelta(), 0.05);
+  if (autoSpin) orbit.tTheta += dt * 0.17;
+  updateCamera(false);
+  updateLabels();
+  if (++frame % 8 === 0) updateScale();
+  renderer.render(scene, camera);
+}
+
+function updateScale() {
+  var mPerPx = (2 * orbit.dist * Math.tan(camera.fov * Math.PI / 360)) / window.innerHeight;
+  var target = mPerPx * 92;
+  var pow = Math.pow(10, Math.floor(Math.log(target) / Math.LN10));
+  var n = target / pow;
+  var nice = n >= 5 ? 5 : (n >= 2 ? 2 : 1);
+  var meters = nice * pow;
+  document.getElementById('scaleText').textContent = meters >= 1000 ? (meters / 1000) + ' km' : meters + ' m';
+  document.getElementById('scaleBar').style.width = Math.min(160, meters / mPerPx) + 'px';
+  var arrow = document.getElementById('compassArrow');
+  if (arrow) arrow.style.transform = 'rotate(' + (-orbit.theta * 180 / Math.PI) + 'deg)';
+}
+
+function start() {
+  try {
+    init();
+    buildLabels();
+    bindEvents();
+    onResize();
+    setTimeout(function () {
+      toast('已加载 ' + campusMeshes.length + ' 栋校内建筑 · 数据来自 OpenStreetMap 实测');
+    }, 900);
+  } catch (err) {
+    fail('三维场景初始化失败<br><span style="color:#ff9a8b;font-size:12px">' + (err && err.message ? err.message : err) + '</span>');
+    if (window.console) console.error(err);
+  }
+}
+
+start();
+})();
+</script>
+</body>
+</html>
