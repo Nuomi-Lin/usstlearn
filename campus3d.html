@@ -7,17 +7,17 @@
 <title>上海理工大学 · 军工路校区实景三维 | USST 3D</title>
 <style>
 :root{
-  --bg:#050a12;
-  --panel:rgba(10,18,30,.82);
-  --panel-2:rgba(255,255,255,.045);
-  --line:rgba(255,255,255,.10);
-  --text:#eaf2ff;
-  --muted:#8fa4c4;
-  --accent:#4c9bff;
-  --accent-2:#5fe3c0;
-  --gold:#f2c879;
-  --danger:#ff7d6b;
-  --shadow:0 18px 50px rgba(0,0,0,.45);
+  --bg:#0f0809;
+  --panel:rgba(20,12,14,.84);
+  --panel-2:rgba(255,240,236,.05);
+  --line:rgba(255,235,230,.12);
+  --text:#f4ede8;
+  --muted:#c9b3af;
+  --accent:#c8293f;
+  --accent-2:#c6a05a;
+  --gold:#d8b36a;
+  --danger:#e8551f;
+  --shadow:0 18px 50px rgba(0,0,0,.5);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;margin:0;overflow:hidden;background:var(--bg);color:var(--text);
@@ -32,18 +32,18 @@ a{color:inherit;text-decoration:none}
 .topbar{
   position:fixed;top:0;left:0;right:0;height:64px;z-index:30;display:flex;align-items:center;
   gap:14px;padding:0 18px;pointer-events:none;
-  background:linear-gradient(180deg,rgba(5,10,18,.86),rgba(5,10,18,0));
+  background:linear-gradient(180deg,rgba(15,8,9,.86),rgba(15,8,9,0));
 }
 .brand{display:flex;align-items:center;gap:11px;pointer-events:auto;flex:0 0 auto}
 .mark{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-weight:800;font-size:13px;
-  letter-spacing:.5px;color:#061321;background:linear-gradient(140deg,#7fd8ff,#5fe3c0);box-shadow:0 6px 18px rgba(95,227,192,.25)}
+  letter-spacing:.5px;color:#fff;background:linear-gradient(140deg,#c8293f,#8e1226);box-shadow:0 6px 18px rgba(184,27,48,.3)}
 .brand h1{margin:0;font-size:15px;font-weight:650;letter-spacing:.4px;white-space:nowrap}
 .brand p{margin:0;font-size:11px;color:var(--muted);letter-spacing:.6px;white-space:nowrap}
 .top-actions{margin-left:auto;display:flex;align-items:center;gap:8px;pointer-events:auto}
 .pill{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 13px;border-radius:999px;
-  background:rgba(255,255,255,.07);border:1px solid var(--line);font-size:12.5px;color:#dce8fb;
+  background:rgba(255,255,255,.07);border:1px solid var(--line);font-size:12.5px;color:#ead9d3;
   backdrop-filter:blur(12px);transition:.2s}
-.pill:hover{background:rgba(76,155,255,.18);border-color:rgba(76,155,255,.45)}
+.pill:hover{background:rgba(200,41,63,.18);border-color:rgba(200,41,63,.45)}
 .pill .dot{width:7px;height:7px;border-radius:50%;background:var(--accent-2);box-shadow:0 0 8px var(--accent-2)}
 
 .panel{
@@ -57,48 +57,48 @@ a{color:inherit;text-decoration:none}
 .panel::-webkit-scrollbar-thumb{background:rgba(255,255,255,.16);border-radius:9px}
 .panel-title{display:flex;align-items:center;justify-content:space-between;font-size:11px;letter-spacing:1.6px;
   color:var(--muted);text-transform:uppercase}
-.panel-title span:last-child{letter-spacing:0;text-transform:none;font-size:11px;color:#5f769a}
+.panel-title span:last-child{letter-spacing:0;text-transform:none;font-size:11px;color:#7d6a68}
 .search{position:relative}
 .search input{
   width:100%;height:38px;border-radius:11px;border:1px solid var(--line);background:rgba(255,255,255,.05);
   color:var(--text);padding:0 34px 0 12px;font-size:13px;outline:none;transition:.2s;
 }
-.search input::placeholder{color:#64789a}
-.search input:focus{border-color:rgba(76,155,255,.6);background:rgba(76,155,255,.08)}
+.search input::placeholder{color:#8a7370}
+.search input:focus{border-color:rgba(200,41,63,.6);background:rgba(200,41,63,.08)}
 .search svg{position:absolute;right:11px;top:11px;opacity:.5}
 .results{position:absolute;left:0;right:0;top:44px;z-index:5;display:none;max-height:220px;overflow:auto;
-  background:#0a1524;border:1px solid var(--line);border-radius:11px;box-shadow:var(--shadow);padding:5px}
+  background:#1a1013;border:1px solid var(--line);border-radius:11px;box-shadow:var(--shadow);padding:5px}
 .results.show{display:block}
-.results button{display:block;width:100%;text-align:left;padding:7px 9px;border-radius:8px;font-size:12.5px;color:#cfe0f7}
-.results button:hover,.results button:focus{background:rgba(76,155,255,.18)}
+.results button{display:block;width:100%;text-align:left;padding:7px 9px;border-radius:8px;font-size:12.5px;color:#ead9d3}
+.results button:hover,.results button:focus{background:rgba(200,41,63,.18)}
 .results .none{padding:8px 9px;font-size:12px;color:var(--muted)}
 
 .views{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 .views button,.toggle{
   border:1px solid var(--line);background:rgba(255,255,255,.045);border-radius:10px;
-  font-size:12px;padding:8px 6px;color:#cfe0f7;transition:.18s;text-align:center;
+  font-size:12px;padding:8px 6px;color:#ead9d3;transition:.18s;text-align:center;
 }
-.views button:hover,.toggle:hover{background:rgba(76,155,255,.16);border-color:rgba(76,155,255,.42)}
-.views button.active{background:rgba(76,155,255,.22);border-color:rgba(95,227,192,.55);color:#fff}
+.views button:hover,.toggle:hover{background:rgba(200,41,63,.16);border-color:rgba(200,41,63,.42)}
+.views button.active{background:rgba(200,41,63,.22);border-color:rgba(198,160,90,.55);color:#fff}
 
 .layers{display:flex;flex-direction:column;gap:2px}
 .layer{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:9px;font-size:12.5px;
-  color:#d6e4f8;cursor:pointer;user-select:none;transition:background .16s}
+  color:#e8d8d2;cursor:pointer;user-select:none;transition:background .16s}
 .layer:hover{background:rgba(255,255,255,.05)}
 .layer input{appearance:none;width:30px;height:17px;border-radius:999px;background:rgba(255,255,255,.14);
   position:relative;flex:0 0 auto;transition:.2s;cursor:pointer}
 .layer input::after{content:"";position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;
-  background:#93a6c7;transition:.2s}
-.layer input:checked{background:rgba(76,155,255,.65)}
+  background:#b6a29f;transition:.2s}
+.layer input:checked{background:rgba(200,41,63,.65)}
 .layer input:checked::after{left:15px;background:#fff}
 .layer .sw{width:9px;height:9px;border-radius:3px;flex:0 0 auto}
 
 .row{display:flex;gap:7px}
 .row .toggle{flex:1}
-.toggle.on{background:rgba(95,227,192,.18);border-color:rgba(95,227,192,.5);color:#eafffa}
+.toggle.on{background:rgba(198,160,90,.18);border-color:rgba(198,160,90,.5);color:#fbf2de}
 
 .meta{border-top:1px solid var(--line);padding-top:11px;display:grid;gap:6px;font-size:11.5px;color:var(--muted)}
-.meta b{color:#cbdcf4;font-weight:600}
+.meta b{color:#e3d3cd;font-weight:600}
 
 .info{
   position:fixed;right:16px;top:78px;width:292px;z-index:45;padding:18px;border-radius:18px;
@@ -110,56 +110,56 @@ a{color:inherit;text-decoration:none}
 .info .close{position:absolute;right:11px;top:11px;width:26px;height:26px;border-radius:50%;
   display:grid;place-items:center;color:var(--muted);background:rgba(255,255,255,.06)}
 .info .close:hover{color:#fff;background:rgba(255,255,255,.12)}
-.info .tag{display:inline-block;font-size:10.5px;letter-spacing:.8px;color:#7fe9cf;background:rgba(95,227,192,.12);
-  border:1px solid rgba(95,227,192,.25);padding:2px 8px;border-radius:999px;margin-bottom:9px}
+.info .tag{display:inline-block;font-size:10.5px;letter-spacing:.8px;color:#d8b36a;background:rgba(198,160,90,.12);
+  border:1px solid rgba(198,160,90,.25);padding:2px 8px;border-radius:999px;margin-bottom:9px}
 .info h2{margin:0 0 3px;font-size:19px;line-height:1.35;padding-right:22px}
 .info .sub{font-size:11.5px;color:var(--muted);margin-bottom:14px}
 .info dl{display:grid;grid-template-columns:74px 1fr;gap:8px 10px;margin:0;font-size:12.5px}
 .info dt{color:var(--muted)}
-.info dd{margin:0;color:#e3eefc}
+.info dd{margin:0;color:#f2e6e0}
 .info .act{margin-top:15px;display:flex;gap:7px}
 .info .act button{flex:1;height:33px;border-radius:9px;font-size:12px;border:1px solid var(--line);
   background:rgba(255,255,255,.05)}
-.info .act button:hover{background:rgba(76,155,255,.18);border-color:rgba(76,155,255,.45)}
+.info .act button:hover{background:rgba(200,41,63,.18);border-color:rgba(200,41,63,.45)}
 
 .labels{position:fixed;inset:0;z-index:20;pointer-events:none;overflow:hidden}
 .lbl{
-  position:absolute;transform:translate(-50%,-100%);white-space:nowrap;font-size:11px;color:#dceafc;
-  padding:2px 7px;border-radius:7px;background:rgba(7,15,26,.72);border:1px solid rgba(255,255,255,.12);
+  position:absolute;transform:translate(-50%,-100%);white-space:nowrap;font-size:11px;color:#e8d8d2;
+  padding:2px 7px;border-radius:7px;background:rgba(20,10,12,.72);border:1px solid rgba(255,255,255,.12);
   box-shadow:0 4px 12px rgba(0,0,0,.3);opacity:0;transition:opacity .18s;letter-spacing:.2px;
 }
 .lbl::after{content:"";position:absolute;left:50%;bottom:-4px;width:1px;height:4px;background:rgba(255,255,255,.25)}
-.lbl.gold{color:#ffe1a6;border-color:rgba(242,200,121,.34);background:rgba(38,28,10,.72)}
+.lbl.gold{color:#f0d49a;border-color:rgba(216,179,106,.34);background:rgba(40,30,12,.75)}
 
 .bottom{position:fixed;left:0;right:0;bottom:0;height:52px;z-index:25;display:flex;align-items:center;
-  justify-content:center;gap:14px;pointer-events:none;font-size:11.5px;color:#7d93b5;
-  background:linear-gradient(0deg,rgba(5,10,18,.9),rgba(5,10,18,0))}
+  justify-content:center;gap:14px;pointer-events:none;font-size:11.5px;color:#c9b3ae;
+  background:linear-gradient(0deg,rgba(12,6,7,.96),rgba(12,6,7,0))}
 .bottom .k{display:inline-flex;align-items:center;gap:5px}
-.bottom .k b{color:#c6d8ef;font-weight:600}
+.bottom .k b{color:#e0d0ca;font-weight:600}
 .compass{
   position:fixed;right:22px;bottom:64px;width:56px;height:56px;border-radius:50%;z-index:26;
-  border:1px solid var(--line);background:rgba(8,16,28,.7);backdrop-filter:blur(10px);
+  border:1px solid var(--line);background:rgba(24,12,14,.7);backdrop-filter:blur(10px);
   display:grid;place-items:center;pointer-events:none;
 }
-.compass .n{position:absolute;top:4px;font-size:9px;color:#ff9a8b;letter-spacing:1px}
-.compass .arrow{width:2px;height:26px;background:linear-gradient(180deg,#ff7d6b 50%,#7fa8da 50%);border-radius:2px;
+.compass .n{position:absolute;top:4px;font-size:9px;color:#e8551f;letter-spacing:1px}
+.compass .arrow{width:2px;height:26px;background:linear-gradient(180deg,#e8551f 50%,#b39b98 50%);border-radius:2px;
   transition:transform .12s linear}
 .scale{
-  position:fixed;left:18px;bottom:62px;z-index:26;pointer-events:none;color:#9fb4d3;font-size:10.5px;
+  position:fixed;left:18px;bottom:62px;z-index:26;pointer-events:none;color:#c9b3ae;font-size:10.5px;
   display:flex;flex-direction:column;gap:3px;
 }
-.scale .bar{height:3px;background:linear-gradient(90deg,#9fb4d3 0 48%,transparent 48% 52%,#9fb4d3 52% 100%);
+.scale .bar{height:3px;background:linear-gradient(90deg,#c9b3ae 0 48%,transparent 48% 52%,#c9b3ae 52% 100%);
   border-radius:2px;transition:width .15s}
 
-.loading{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:#050a12;
-  transition:opacity .6s;font-size:13px;color:#9fb4d3;letter-spacing:1px}
+.loading{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:#0f0809;
+  transition:opacity .6s;font-size:13px;color:#c9b3ae;letter-spacing:1px}
 .loading.hide{opacity:0;pointer-events:none}
 .loading .inner{text-align:center}
 .loading .ring{width:44px;height:44px;margin:0 auto 16px;border-radius:50%;
-  border:2px solid rgba(76,155,255,.2);border-top-color:#5fe3c0;animation:spin 1s linear infinite}
+  border:2px solid rgba(200,41,63,.2);border-top-color:#c6a05a;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .toast{position:fixed;left:50%;top:76px;transform:translate(-50%,-12px);z-index:60;padding:7px 14px;
-  border-radius:999px;background:rgba(76,155,255,.2);border:1px solid rgba(76,155,255,.45);
+  border-radius:999px;background:rgba(200,41,63,.2);border:1px solid rgba(200,41,63,.45);
   font-size:12px;opacity:0;transition:.25s;pointer-events:none}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 
@@ -219,13 +219,13 @@ a{color:inherit;text-decoration:none}
 
   <div class="panel-title"><span>图层</span><span>实测数据</span></div>
   <div class="layers">
-    <label class="layer"><input type="checkbox" data-layer="campus" checked><span class="sw" style="background:#d9cfb8"></span>校园建筑</label>
-    <label class="layer"><input type="checkbox" data-layer="env" checked><span class="sw" style="background:#7f8b9c"></span>周边城市建筑</label>
-    <label class="layer"><input type="checkbox" data-layer="road" checked><span class="sw" style="background:#5b6472"></span>道路与步道</label>
-    <label class="layer"><input type="checkbox" data-layer="water" checked><span class="sw" style="background:#2f86d6"></span>河道水系</label>
-    <label class="layer"><input type="checkbox" data-layer="green" checked><span class="sw" style="background:#2f8f6b"></span>绿地与树木</label>
-    <label class="layer"><input type="checkbox" data-layer="sport" checked><span class="sw" style="background:#c4553f"></span>运动场地</label>
-    <label class="layer"><input type="checkbox" data-layer="label" checked><span class="sw" style="background:#f2c879"></span>名称标注</label>
+<label class="layer"><input type="checkbox" data-layer="campus" checked><span class="sw" style="background:#d9cfb8"></span>校园建筑</label>
+<label class="layer"><input type="checkbox" data-layer="env" checked><span class="sw" style="background:#8a8280"></span>周边城市建筑</label>
+<label class="layer"><input type="checkbox" data-layer="road" checked><span class="sw" style="background:#6e6260"></span>道路与步道</label>
+<label class="layer"><input type="checkbox" data-layer="water" checked><span class="sw" style="background:#2f6fa8"></span>河道水系</label>
+<label class="layer"><input type="checkbox" data-layer="green" checked><span class="sw" style="background:#3c7a54"></span>绿地与树木</label>
+<label class="layer"><input type="checkbox" data-layer="sport" checked><span class="sw" style="background:#c4553f"></span>运动场地</label>
+<label class="layer"><input type="checkbox" data-layer="label" checked><span class="sw" style="background:#d8b36a"></span>名称标注</label>
   </div>
 
   <div class="row">
@@ -300,7 +300,7 @@ var layers = { campus: true, env: true, road: true, water: true, green: true, sp
 var COLORS = {
   university: 0xd7ccb2, dormitory: 0xc4886f, school: 0xd3b98f, library: 0xe6d6a8,
   restaurant: 0xd9a15f, hospital: 0xdfe3e6, residential: 0xa4adb8, apartments: 0xb0a9a3,
-  construction: 0x93a0ad, yes: 0xbfc4c9, house: 0xcbbfa9, hist: 0xb36a56, default: 0xc2bcae
+  construction: 0x93a0ad, yes: 0xbfc4c9, house: 0xcbbfa9, hist: 0xb81b30, default: 0xc2bcae
 };
 var KIND_CN = {
   university: '教学 / 科研建筑', dormitory: '学生宿舍', school: '教学建筑', library: '图书馆',
@@ -368,8 +368,8 @@ function wallMaterial(b) {
 function roofMaterial(b) {
   var key = b.hist ? 'hist' : (COLORS[b.k] ? b.k : 'default');
   if (roofCache[key]) return roofCache[key];
-  var col = new THREE.Color(COLORS[key] || COLORS.default).multiplyScalar(0.58);
-  if (b.hist) col = new THREE.Color(0x7d3b30);
+  var col = new THREE.Color(COLORS[key] || COLORS.default).multiplyScalar(0.58).lerp(new THREE.Color(0x7e1c25), 0.5);
+  if (b.hist) col = new THREE.Color(0x8e1226);
   var m = new THREE.MeshStandardMaterial({ color: col, roughness: 0.9, metalness: 0.04 });
   roofCache[key] = m;
   return m;
@@ -474,8 +474,8 @@ function rand(seed) {
 
 function init() {
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x0a1424);
-  scene.fog = new THREE.Fog(0x0a1424, 1500, 3400);
+  scene.background = new THREE.Color(0x140c0e);
+  scene.fog = new THREE.Fog(0x140c0e, 1500, 3400);
 
   renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -489,15 +489,15 @@ function init() {
 
   camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 9000);
 
-  var hemi = new THREE.HemisphereLight(0x9ec9ff, 0x1a2430, 0.95);
+  var hemi = new THREE.HemisphereLight(0xe8d2c8, 0x221a16, 0.95);
   scene.add(hemi);
   var sun = new THREE.DirectionalLight(0xfff2da, 1.5);
   sun.position.set(700, 1000, 420);
   scene.add(sun);
-  var fill = new THREE.DirectionalLight(0x4f86ff, 0.55);
+  var fill = new THREE.DirectionalLight(0xc27a6a, 0.55);
   fill.position.set(-600, 380, -520);
   scene.add(fill);
-  var amb = new THREE.AmbientLight(0x8fb4e6, 0.28);
+  var amb = new THREE.AmbientLight(0xd8c0b4, 0.28);
   scene.add(amb);
   scene.userData.hemi = hemi;
   scene.userData.sun = sun;
@@ -510,12 +510,12 @@ function init() {
   windowTexture = makeWindowTexture();
   facadeTexture = makeFacadeTexture();
   highlightMat = new THREE.MeshStandardMaterial({
-    color: 0x5fe3c0, emissive: 0x2fa88a, emissiveIntensity: 0.55, roughness: 0.45, metalness: 0.1
+    color: 0xd8b36a, emissive: 0xa87c2e, emissiveIntensity: 0.55, roughness: 0.45, metalness: 0.1
   });
   envMat = new THREE.MeshStandardMaterial({
-    color: 0x7f8b9c, roughness: 0.92, metalness: 0.04
+    color: 0x8a8280, roughness: 0.92, metalness: 0.04
   });
-  envRoofMat = new THREE.MeshStandardMaterial({ color: 0x56616f, roughness: 0.95 });
+  envRoofMat = new THREE.MeshStandardMaterial({ color: 0x5e5654, roughness: 0.95 });
 
   buildTerrain();
   buildCampusSlab();
@@ -545,7 +545,7 @@ function buildTerrain() {
     pos.setY(i, h);
   }
   g.computeVertexNormals();
-  var m = new THREE.MeshStandardMaterial({ color: 0x1a2634, roughness: 1, metalness: 0 });
+  var m = new THREE.MeshStandardMaterial({ color: 0x241a1c, roughness: 1, metalness: 0 });
   var mesh = new THREE.Mesh(g, m);
   mesh.position.set(15, -0.9, 120);
   world.add(mesh);
@@ -554,7 +554,7 @@ function buildTerrain() {
 
 function buildCampusSlab() {
   slabGroup = new THREE.Group();
-  var colors = [0x2e3a49, 0x303c4b];
+  var colors = [0x3e3034, 0x44363a];
   for (var i = 0; i < DATA.campus.length; i++) {
     slabGroup.add(flatShape(DATA.campus[i], colors[i % 2], 0.1));
   }
@@ -604,10 +604,10 @@ function buildRoads() {
     groups[key].push(g);
   }
   var defs = [
-    ['carOut', 0x39424f, 0.95],
-    ['carIn', 0x7b8696, 0.98],
-    ['walkOut', 0x4c5665, 0.9],
-    ['walkIn', 0x9aa5b4, 0.95]
+    ['carOut', 0x4a4042, 0.95],
+    ['carIn', 0x9a8f8c, 0.98],
+    ['walkOut', 0x5e5254, 0.9],
+    ['walkIn', 0xada19c, 0.95]
   ];
   for (var d = 0; d < defs.length; d++) {
     if (!groups[defs[d][0]].length) continue;
@@ -620,8 +620,8 @@ function buildRoads() {
 function buildWater() {
   waterGroup = new THREE.Group();
   var mat = new THREE.MeshStandardMaterial({
-    color: 0x1f6fa8, roughness: 0.18, metalness: 0.55,
-    emissive: 0x0a3358, emissiveIntensity: 0.35
+    color: 0x2e6ea8, roughness: 0.18, metalness: 0.55,
+    emissive: 0x123c66, emissiveIntensity: 0.35
   });
   for (var i = 0; i < DATA.waters.length; i++) {
     var w = DATA.waters[i];
@@ -634,16 +634,16 @@ function buildWater() {
 function buildGreens() {
   greenGroup = new THREE.Group();
   for (var i = 0; i < DATA.greens.length; i++) {
-    greenGroup.add(flatShape(DATA.greens[i].p, 0x24573f, 0.14));
+    greenGroup.add(flatShape(DATA.greens[i].p, 0x2f6b45, 0.14));
   }
   world.add(greenGroup);
 }
 
 function buildSports() {
   sportGroup = new THREE.Group();
-  var pitchMat = new THREE.MeshStandardMaterial({ color: 0x2f7a4f, roughness: 0.95 });
-  var trackMat = new THREE.MeshStandardMaterial({ color: 0xa8493a, roughness: 0.92 });
-  var courtMat = new THREE.MeshStandardMaterial({ color: 0x2f6f78, roughness: 0.9 });
+  var pitchMat = new THREE.MeshStandardMaterial({ color: 0x3a7a50, roughness: 0.95 });
+  var trackMat = new THREE.MeshStandardMaterial({ color: 0xb04a38, roughness: 0.92 });
+  var courtMat = new THREE.MeshStandardMaterial({ color: 0x356b78, roughness: 0.9 });
   for (var i = 0; i < DATA.pitches.length; i++) {
     var s = DATA.pitches[i];
     var mat = (s.s === 'basketball' || s.s === 'tennis' || s.s === 'volleyball') ? courtMat : pitchMat;
@@ -704,7 +704,7 @@ function buildTrees() {
   var trunkGeo = new THREE.CylinderGeometry(0.45, 0.75, 3.4, 5);
   var crownGeo = new THREE.ConeGeometry(3.1, 8.2, 6);
   var trunkMat = new THREE.MeshStandardMaterial({ color: 0x4a3826, roughness: 1 });
-  var crownMat = new THREE.MeshStandardMaterial({ color: 0x2f8f6b, roughness: 0.92 });
+  var crownMat = new THREE.MeshStandardMaterial({ color: 0x3c7a54, roughness: 0.92 });
   var trunks = new THREE.InstancedMesh(trunkGeo, trunkMat, positions.length);
   var crowns = new THREE.InstancedMesh(crownGeo, crownMat, positions.length);
   var mtx = new THREE.Matrix4();
@@ -945,20 +945,20 @@ function updateLabels() {
 
 function applyNight(on) {
   night = on;
-  var bg = new THREE.Color(on ? 0x04070d : 0x0a1424);
+  var bg = new THREE.Color(on ? 0x0b0708 : 0x140c0e);
   scene.background = bg;
   scene.fog.color = bg.clone();
   scene.userData.hemi.intensity = on ? 0.28 : 0.95;
   scene.userData.sun.intensity = on ? 0.32 : 1.5;
-  scene.userData.sun.color.set(on ? 0x9db9ff : 0xfff2da);
+  scene.userData.sun.color.set(on ? 0xf0cda8 : 0xfff2da);
   scene.userData.fill.intensity = on ? 0.22 : 0.55;
   scene.userData.amb.intensity = on ? 0.1 : 0.28;
-  world.userData.terrain.material.color.set(on ? 0x0c141f : 0x1a2634);
-  slabGroup.children.forEach(function (m) { m.material.color.set(on ? 0x1c2735 : 0x2e3a49); });
+  world.userData.terrain.material.color.set(on ? 0x161012 : 0x241a1c);
+  slabGroup.children.forEach(function (m) { m.material.color.set(on ? 0x2a2024 : 0x3e3034); });
   for (var k in wallCache) {
     if (wallCache.hasOwnProperty(k)) wallCache[k].emissiveIntensity = on ? 0.92 : 0;
   }
-  if (envMat) envMat.color.set(on ? 0x5b6675 : 0x7f8b9c);
+  if (envMat) envMat.color.set(on ? 0x6b605e : 0x8a8280);
   waterGroup.children.forEach(function (m) { if (m.material) m.material.emissiveIntensity = on ? 0.75 : 0.35; });
   document.getElementById('btnNight').classList.toggle('on', on);
   document.getElementById('btnNight').textContent = on ? '日景模式' : '夜景模式';
@@ -1172,7 +1172,7 @@ function start() {
       toast('已加载 ' + campusMeshes.length + ' 栋校内建筑 · 数据来自 OpenStreetMap 实测');
     }, 900);
   } catch (err) {
-    fail('三维场景初始化失败<br><span style="color:#ff9a8b;font-size:12px">' + (err && err.message ? err.message : err) + '</span>');
+    fail('三维场景初始化失败<br><span style="color:#e8551f;font-size:12px">' + (err && err.message ? err.message : err) + '</span>');
     if (window.console) console.error(err);
   }
 }
